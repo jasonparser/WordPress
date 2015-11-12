@@ -8,20 +8,6 @@
  * @package WordPress
  */
 
-/** Make sure that the WordPress bootstrap has run before continuing. */
-require( dirname(__FILE__) . '/wp-load.php' );
-
-// Redirect to https login if forced to use SSL
-if ( force_ssl_admin() && ! is_ssl() ) {
-	if ( 0 === strpos($_SERVER['REQUEST_URI'], 'http') ) {
-		wp_redirect( set_url_scheme( $_SERVER['REQUEST_URI'], 'https' ) );
-		exit();
-	} else {
-		wp_redirect( 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
-		exit();
-	}
-}
-
 /**
  * Output the login page header.
  *
@@ -397,6 +383,13 @@ function retrieve_password() {
 		wp_die( __('The e-mail could not be sent.') . "<br />\n" . __('Possible reason: your host may have disabled the mail() function.') );
 
 	return true;
+	
+	$message = apply_filters( 'retrieve_password_message', $message, $key );
+
+	if ( $message && !wp_mail( $user_email, wp_specialchars_decode( $title ), $message ) )
+		wp_die( __('The e-mail could not be sent.') . "<br />\n" . __('Possible reason: your host may have disabled the mail() function.') );
+
+	return true;	
 }
 
 //
